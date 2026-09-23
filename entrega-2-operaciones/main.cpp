@@ -3,95 +3,77 @@
 
 using namespace std;
 
-const int PAISES = 4;
-const int MESES = 3;
-
 int main() {
 
-    string paises[PAISES];
-    float temperaturas[PAISES][MESES];
-    float promedios[PAISES] = {0};
+    const int NUM_ESTUDIANTES = 3;
+    const int NUM_ASIGNATURAS = 3;
 
-    int indiceMayor = 0;
+    string nombres[NUM_ESTUDIANTES];
+    string codigos[NUM_ESTUDIANTES];
+    string asignaturas[NUM_ASIGNATURAS];
 
-    // 1. Ingresar los paises y las temperaturas
-    cout << "=== REGISTRO DE TEMPERATURAS ===" << endl;
+    float notas[NUM_ESTUDIANTES][NUM_ASIGNATURAS];
 
-    for (int i = 0; i < PAISES; i++) {
+    cout << "=== SISTEMA DE GESTION ACADEMICA ===" << endl;
 
-        cout << "\nIngrese el nombre del pais " << i + 1 << ": ";
-        cin >> paises[i];
+    cout << "\nIngreso de asignaturas" << endl;
 
-        for (int j = 0; j < MESES; j++) {
+    for (int j = 0; j < NUM_ASIGNATURAS; j++) {
 
-            cout << "Ingrese la temperatura del mes "
-                 << j + 1
-                 << " para "
-                 << paises[i]
+        cout << "Ingrese el nombre de la asignatura "
+             << j + 1
+             << ": ";
+
+        getline(cin, asignaturas[j]);
+    }
+
+    cout << "\nIngreso de estudiantes" << endl;
+
+    for (int i = 0; i < NUM_ESTUDIANTES; i++) {
+
+        cout << "\nEstudiante " << i + 1 << endl;
+
+        cout << "Ingrese el nombre: ";
+        getline(cin, nombres[i]);
+
+        cout << "Ingrese el codigo: ";
+        getline(cin, codigos[i]);
+    }
+
+    cout << "\nIngreso de notas" << endl;
+
+    for (int i = 0; i < NUM_ESTUDIANTES; i++) {
+
+        cout << "\nNotas de " << nombres[i] << endl;
+
+        for (int j = 0; j < NUM_ASIGNATURAS; j++) {
+
+            cout << "Ingrese la nota de "
+                 << asignaturas[j]
                  << ": ";
 
-            cin >> temperaturas[i][j];
+            cin >> notas[i][j];
         }
     }
 
-    // 2. Mostrar los paises y las temperaturas ingresadas
-    cout << "\n=== TEMPERATURAS REGISTRADAS ===" << endl;
+    cout << "\n\n=== INFORMACION REGISTRADA ===" << endl;
 
-    for (int i = 0; i < PAISES; i++) {
+    for (int i = 0; i < NUM_ESTUDIANTES; i++) {
 
-        cout << "\nPais: " << paises[i] << endl;
+        cout << "\nEstudiante: " << nombres[i] << endl;
+        cout << "Codigo: " << codigos[i] << endl;
 
-        for (int j = 0; j < MESES; j++) {
+        cout << "Notas:" << endl;
 
-            cout << "Mes "
-                 << j + 1
+        for (int j = 0; j < NUM_ASIGNATURAS; j++) {
+
+            cout << "- "
+                 << asignaturas[j]
                  << ": "
-                 << temperaturas[i][j]
-                 << " grados"
+                 << notas[i][j]
                  << endl;
         }
     }
-
-    // 3. Calcular el promedio trimestral de cada pais
-    for (int i = 0; i < PAISES; i++) {
-
-        float suma = 0;
-
-        for (int j = 0; j < MESES; j++) {
-
-            suma = suma + temperaturas[i][j];
-        }
-
-        promedios[i] = suma / MESES;
-    }
-
-    // 4. Mostrar los promedios trimestrales
-    cout << "\n=== PROMEDIOS TRIMESTRALES ===" << endl;
-
-    for (int i = 0; i < PAISES; i++) {
-
-        cout << paises[i]
-             << ": "
-             << promedios[i]
-             << " grados"
-             << endl;
-    }
-
-    // 5. Buscar el pais con mayor temperatura promedio
-    for (int i = 1; i < PAISES; i++) {
-
-        if (promedios[i] > promedios[indiceMayor]) {
-
-            indiceMayor = i;
-        }
-    }
-
-    cout << "\nEl pais con la mayor temperatura promedio es: "
-         << paises[indiceMayor]
-         << " con "
-         << promedios[indiceMayor]
-         << " grados."
-         << endl;
 
     return 0;
 }
