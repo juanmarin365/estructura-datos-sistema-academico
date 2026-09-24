@@ -7,16 +7,9 @@ using namespace std;
 const int MAX_ESTUDIANTES = 10;
 const int NUM_ASIGNATURAS = 3;
 
-
-// Limpia el salto de linea pendiente del cin
 void limpiarEntrada() {
     cin.ignore(numeric_limits<streamsize>::max(), '\n');
 }
-
-
-// ----------------------------------------------------
-// BUSCAR ESTUDIANTE POR CODIGO
-// ----------------------------------------------------
 
 int buscarEstudiante(
     string codigos[],
@@ -33,11 +26,6 @@ int buscarEstudiante(
 
     return -1;
 }
-
-
-// ----------------------------------------------------
-// REGISTRAR ESTUDIANTE
-// ----------------------------------------------------
 
 void registrarEstudiante(
     string nombres[],
@@ -77,11 +65,6 @@ void registrarEstudiante(
     cout << "\nEstudiante registrado correctamente." << endl;
 }
 
-
-// ----------------------------------------------------
-// MOSTRAR ESTUDIANTES
-// ----------------------------------------------------
-
 void mostrarEstudiantes(
     string nombres[],
     string codigos[],
@@ -115,11 +98,6 @@ void mostrarEstudiantes(
         }
     }
 }
-
-
-// ----------------------------------------------------
-// CONSULTAR ESTUDIANTE
-// ----------------------------------------------------
 
 void consultarEstudiante(
     string nombres[],
@@ -161,11 +139,6 @@ void consultarEstudiante(
              << endl;
     }
 }
-
-
-// ----------------------------------------------------
-// ACTUALIZAR ESTUDIANTE
-// ----------------------------------------------------
 
 void actualizarEstudiante(
     string nombres[],
@@ -209,11 +182,6 @@ void actualizarEstudiante(
     cout << "\nEstudiante actualizado correctamente." << endl;
 }
 
-
-// ----------------------------------------------------
-// ELIMINAR ESTUDIANTE
-// ----------------------------------------------------
-
 void eliminarEstudiante(
     string nombres[],
     string codigos[],
@@ -251,11 +219,6 @@ void eliminarEstudiante(
     cout << "\nEstudiante eliminado correctamente." << endl;
 }
 
-
-// ----------------------------------------------------
-// CALCULAR PROMEDIO
-// ----------------------------------------------------
-
 float calcularPromedio(
     float notas[][NUM_ASIGNATURAS],
     int estudiante
@@ -270,11 +233,6 @@ float calcularPromedio(
 
     return suma / NUM_ASIGNATURAS;
 }
-
-
-// ----------------------------------------------------
-// MOSTRAR PROMEDIOS
-// ----------------------------------------------------
 
 void mostrarPromedios(
     string nombres[],
@@ -298,11 +256,6 @@ void mostrarPromedios(
              << endl;
     }
 }
-
-
-// ----------------------------------------------------
-// MAYOR PROMEDIO
-// ----------------------------------------------------
 
 void mostrarMayorPromedio(
     string nombres[],
@@ -339,11 +292,6 @@ void mostrarMayorPromedio(
          << endl;
 }
 
-
-// ----------------------------------------------------
-// MENOR PROMEDIO
-// ----------------------------------------------------
-
 void mostrarMenorPromedio(
     string nombres[],
     float notas[][NUM_ASIGNATURAS],
@@ -378,11 +326,6 @@ void mostrarMenorPromedio(
          << calcularPromedio(notas, posicionMenor)
          << endl;
 }
-
-
-// ----------------------------------------------------
-// ORDENAR POR NOMBRE
-// ----------------------------------------------------
 
 void ordenarEstudiantes(
     string nombres[],
@@ -426,11 +369,6 @@ void ordenarEstudiantes(
 
     cout << "\nEstudiantes ordenados correctamente." << endl;
 }
-
-
-// ----------------------------------------------------
-// MAIN
-// ----------------------------------------------------
 
 int main() {
 
