@@ -4,27 +4,29 @@
 
 using namespace std;
 
+const float NOTA_APROBACION = 3.0;
+
 struct Asignatura {
     string nombre;
-    Asignatura* siguiente;
+    Asignatura *siguiente;
 };
 
 struct Inscripcion {
-    Asignatura* asignatura;
+    Asignatura *asignatura;
     float nota;
-    Inscripcion* siguiente;
+    Inscripcion *siguiente;
 };
 
 struct Estudiante {
     string nombre;
     string codigo;
-    Inscripcion* inscripciones;
-    Estudiante* siguiente;
+    Inscripcion *inscripciones;
+    Estudiante *siguiente;
 };
 
 struct ListaAsignaturas {
-    Asignatura* inicio;
-    Asignatura* fin;
+    Asignatura *inicio;
+    Asignatura *fin;
 
     ListaAsignaturas() {
         inicio = nullptr;
@@ -33,8 +35,8 @@ struct ListaAsignaturas {
 };
 
 struct ListaEstudiantes {
-    Estudiante* inicio;
-    Estudiante* fin;
+    Estudiante *inicio;
+    Estudiante *fin;
 
     ListaEstudiantes() {
         inicio = nullptr;
@@ -42,7 +44,7 @@ struct ListaEstudiantes {
     }
 };
 
-int leerEntero(const string& mensaje) {
+int leerEntero(const string &mensaje) {
     int valor;
 
     while (true) {
@@ -59,7 +61,7 @@ int leerEntero(const string& mensaje) {
     }
 }
 
-float leerNota(const string& mensaje) {
+float leerNota(const string &mensaje) {
     float nota;
 
     while (true) {
@@ -67,16 +69,21 @@ float leerNota(const string& mensaje) {
 
         if (cin >> nota) {
             cin.ignore(numeric_limits<streamsize>::max(), '\n');
-            return nota;
-        }
 
-        cout << "Entrada no valida. Ingresa una nota numerica.\n";
-        cin.clear();
-        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            if (nota >= 0 && nota <= 5) {
+                return nota;
+            }
+
+            cout << "La nota debe estar entre 0 y 5.\n";
+        } else {
+            cout << "Entrada no valida. Ingresa una nota numerica.\n";
+            cin.clear();
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+        }
     }
 }
 
-string leerTexto(const string& mensaje) {
+string leerTexto(const string &mensaje) {
     string texto;
 
     do {
@@ -91,11 +98,11 @@ string leerTexto(const string& mensaje) {
     return texto;
 }
 
-Asignatura* buscarAsignatura(
-    const ListaAsignaturas& lista,
-    const string& nombre
+Asignatura *buscarAsignatura(
+    const ListaAsignaturas &lista,
+    const string &nombre
 ) {
-    Asignatura* actual = lista.inicio;
+    Asignatura *actual = lista.inicio;
 
     while (actual != nullptr) {
         if (actual->nombre == nombre) {
@@ -109,10 +116,16 @@ Asignatura* buscarAsignatura(
 }
 
 void agregarAsignatura(
-    ListaAsignaturas& lista,
-    const string& nombre
+    ListaAsignaturas &lista,
+    const string &nombre
 ) {
-    Asignatura* nueva = new Asignatura;
+    if (buscarAsignatura(lista, nombre) != nullptr) {
+        cout << "La asignatura ya existe.\n";
+        return;
+    }
+
+    Asignatura *nueva = new Asignatura;
+
     nueva->nombre = nombre;
     nueva->siguiente = nullptr;
 
@@ -123,13 +136,195 @@ void agregarAsignatura(
         lista.fin->siguiente = nueva;
         lista.fin = nueva;
     }
+
+    cout << "Asignatura agregada correctamente.\n";
 }
 
-Asignatura* obtenerAsignaturaPorNumero(
-    const ListaAsignaturas& lista,
+void registrarAsignatura(ListaAsignaturas &lista) {
+    string nombre = leerTexto("Nombre de la asignatura: ");
+    agregarAsignatura(lista, nombre);
+}
+
+void mostrarAsignaturas(const ListaAsignaturas &lista) {
+    if (lista.inicio == nullptr) {
+        cout << "No hay asignaturas registradas.\n";
+        return;
+    }
+
+    cout << "\n=== ASIGNATURAS DISPONIBLES ===\n";
+
+    Asignatura *actual = lista.inicio;
+    int posicion = 1;
+
+    while (actual != nullptr) {
+        cout << posicion << ". " << actual->nombre << '\n';
+
+        actual = actual->siguiente;
+        posicion++;
+    }
+}
+
+void consultarAsignatura(const ListaAsignaturas &lista) {
+    string nombre = leerTexto(
+        "Nombre de la asignatura que deseas buscar: "
+    );
+
+    Asignatura *asignatura = buscarAsignatura(lista, nombre);
+
+    if (asignatura == nullptr) {
+        cout << "Asignatura no encontrada.\n";
+        return;
+    }
+
+    cout << "Asignatura encontrada: "
+            << asignatura->nombre
+            << '\n';
+}
+
+void modificarAsignatura(ListaAsignaturas &lista) {
+    string nombreActual = leerTexto(
+        "Nombre de la asignatura que deseas modificar: "
+    );
+
+    Asignatura *asignatura =
+            buscarAsignatura(lista, nombreActual);
+
+    if (asignatura == nullptr) {
+        cout << "Asignatura no encontrada.\n";
+        return;
+    }
+
+    string nuevoNombre = leerTexto(
+        "Nuevo nombre de la asignatura: "
+    );
+
+    if (buscarAsignatura(lista, nuevoNombre) != nullptr) {
+        cout << "Ya existe una asignatura con ese nombre.\n";
+        return;
+    }
+
+    asignatura->nombre = nuevoNombre;
+
+    cout << "Asignatura modificada correctamente.\n";
+}
+
+bool asignaturaTieneInscripciones(
+    const ListaEstudiantes &estudiantes,
+    Asignatura *asignatura
+) {
+    Estudiante *estudianteActual = estudiantes.inicio;
+
+    while (estudianteActual != nullptr) {
+        Inscripcion *inscripcionActual =
+                estudianteActual->inscripciones;
+
+        while (inscripcionActual != nullptr) {
+            if (inscripcionActual->asignatura == asignatura) {
+                return true;
+            }
+
+            inscripcionActual = inscripcionActual->siguiente;
+        }
+
+        estudianteActual = estudianteActual->siguiente;
+    }
+
+    return false;
+}
+
+void eliminarInscripcionesDeAsignatura(
+    ListaEstudiantes &estudiantes,
+    Asignatura *asignatura
+) {
+    Estudiante *estudianteActual = estudiantes.inicio;
+
+    while (estudianteActual != nullptr) {
+        while (
+            estudianteActual->inscripciones != nullptr &&
+            estudianteActual->inscripciones->asignatura == asignatura
+        ) {
+            Inscripcion *eliminar =
+                    estudianteActual->inscripciones;
+
+            estudianteActual->inscripciones =
+                    eliminar->siguiente;
+
+            delete eliminar;
+        }
+
+        Inscripcion *actual =
+                estudianteActual->inscripciones;
+
+        while (
+            actual != nullptr &&
+            actual->siguiente != nullptr
+        ) {
+            if (
+                actual->siguiente->asignatura == asignatura
+            ) {
+                Inscripcion *eliminar = actual->siguiente;
+
+                actual->siguiente = eliminar->siguiente;
+
+                delete eliminar;
+            } else {
+                actual = actual->siguiente;
+            }
+        }
+
+        estudianteActual = estudianteActual->siguiente;
+    }
+}
+
+void eliminarAsignatura(
+    ListaAsignaturas &lista,
+    ListaEstudiantes &estudiantes
+) {
+    string nombre = leerTexto(
+        "Nombre de la asignatura que deseas eliminar: "
+    );
+
+    Asignatura *actual = lista.inicio;
+    Asignatura *anterior = nullptr;
+
+    while (
+        actual != nullptr &&
+        actual->nombre != nombre
+    ) {
+        anterior = actual;
+        actual = actual->siguiente;
+    }
+
+    if (actual == nullptr) {
+        cout << "Asignatura no encontrada.\n";
+        return;
+    }
+
+    eliminarInscripcionesDeAsignatura(
+        estudiantes,
+        actual
+    );
+
+    if (anterior == nullptr) {
+        lista.inicio = actual->siguiente;
+    } else {
+        anterior->siguiente = actual->siguiente;
+    }
+
+    if (lista.fin == actual) {
+        lista.fin = anterior;
+    }
+
+    delete actual;
+
+    cout << "Asignatura eliminada correctamente.\n";
+}
+
+Asignatura *obtenerAsignaturaPorNumero(
+    const ListaAsignaturas &lista,
     int numero
 ) {
-    Asignatura* actual = lista.inicio;
+    Asignatura *actual = lista.inicio;
     int posicion = 1;
 
     while (actual != nullptr) {
@@ -144,47 +339,11 @@ Asignatura* obtenerAsignaturaPorNumero(
     return nullptr;
 }
 
-void registrarAsignaturasIniciales(ListaAsignaturas& lista) {
-    cout << "=== REGISTRO DE ASIGNATURAS ===\n";
-
-    for (int i = 1; i <= 3; i++) {
-        string nombre;
-
-        while (true) {
-            nombre = leerTexto(
-                "Nombre de la asignatura " + to_string(i) + ": "
-            );
-
-            if (buscarAsignatura(lista, nombre) == nullptr) {
-                break;
-            }
-
-            cout << "Esa asignatura ya fue registrada. "
-                 << "Ingresa un nombre diferente.\n";
-        }
-
-        agregarAsignatura(lista, nombre);
-    }
-}
-
-void mostrarAsignaturas(const ListaAsignaturas& lista) {
-    Asignatura* actual = lista.inicio;
-    int posicion = 1;
-
-    cout << "\n=== ASIGNATURAS DISPONIBLES ===\n";
-
-    while (actual != nullptr) {
-        cout << posicion << ". " << actual->nombre << '\n';
-        actual = actual->siguiente;
-        posicion++;
-    }
-}
-
-Estudiante* buscarEstudiante(
-    const ListaEstudiantes& lista,
-    const string& codigo
+Estudiante *buscarEstudiante(
+    const ListaEstudiantes &lista,
+    const string &codigo
 ) {
-    Estudiante* actual = lista.inicio;
+    Estudiante *actual = lista.inicio;
 
     while (actual != nullptr) {
         if (actual->codigo == codigo) {
@@ -197,17 +356,24 @@ Estudiante* buscarEstudiante(
     return nullptr;
 }
 
-void registrarEstudiante(ListaEstudiantes& lista) {
-    string codigo = leerTexto("Codigo del estudiante: ");
+void registrarEstudiante(ListaEstudiantes &lista) {
+    string codigo = leerTexto(
+        "Codigo del estudiante: "
+    );
 
-    if (buscarEstudiante(lista, codigo) != nullptr) {
+    if (
+        buscarEstudiante(lista, codigo) != nullptr
+    ) {
         cout << "Ya existe un estudiante con ese codigo.\n";
         return;
     }
 
-    string nombre = leerTexto("Nombre del estudiante: ");
+    string nombre = leerTexto(
+        "Nombre del estudiante: "
+    );
 
-    Estudiante* nuevo = new Estudiante;
+    Estudiante *nuevo = new Estudiante;
+
     nuevo->nombre = nombre;
     nuevo->codigo = codigo;
     nuevo->inscripciones = nullptr;
@@ -224,11 +390,170 @@ void registrarEstudiante(ListaEstudiantes& lista) {
     cout << "Estudiante registrado correctamente.\n";
 }
 
-bool yaEstaInscrito(
-    const Estudiante* estudiante,
-    const Asignatura* asignatura
+void mostrarInscripciones(
+    const Estudiante *estudiante
 ) {
-    Inscripcion* actual = estudiante->inscripciones;
+    Inscripcion *actual =
+            estudiante->inscripciones;
+
+    if (actual == nullptr) {
+        cout << "  No tiene asignaturas inscritas.\n";
+        return;
+    }
+
+    cout << "  Asignaturas y notas:\n";
+
+    while (actual != nullptr) {
+        cout << "  - "
+                << actual->asignatura->nombre
+                << ": "
+                << actual->nota
+                << '\n';
+
+        actual = actual->siguiente;
+    }
+}
+
+void mostrarUnEstudiante(
+    const Estudiante *estudiante
+) {
+    cout << "\nNombre: "
+            << estudiante->nombre
+            << '\n';
+
+    cout << "Codigo: "
+            << estudiante->codigo
+            << '\n';
+
+    mostrarInscripciones(estudiante);
+}
+
+void mostrarTodosLosEstudiantes(
+    const ListaEstudiantes &lista
+) {
+    if (lista.inicio == nullptr) {
+        cout << "No hay estudiantes registrados.\n";
+        return;
+    }
+
+    cout << "\n=== ESTUDIANTES E INSCRIPCIONES ===\n";
+
+    Estudiante *actual = lista.inicio;
+
+    while (actual != nullptr) {
+        mostrarUnEstudiante(actual);
+        actual = actual->siguiente;
+    }
+}
+
+void consultarEstudiante(
+    const ListaEstudiantes &lista
+) {
+    string codigo = leerTexto(
+        "Codigo del estudiante que deseas consultar: "
+    );
+
+    Estudiante *estudiante =
+            buscarEstudiante(lista, codigo);
+
+    if (estudiante == nullptr) {
+        cout << "No se encontro un estudiante con ese codigo.\n";
+        return;
+    }
+
+    cout << "\n=== ESTUDIANTE ENCONTRADO ===\n";
+
+    mostrarUnEstudiante(estudiante);
+}
+
+void modificarEstudiante(
+    ListaEstudiantes &lista
+) {
+    string codigo = leerTexto(
+        "Codigo del estudiante que deseas modificar: "
+    );
+
+    Estudiante *estudiante =
+            buscarEstudiante(lista, codigo);
+
+    if (estudiante == nullptr) {
+        cout << "Estudiante no encontrado.\n";
+        return;
+    }
+
+    string nuevoNombre = leerTexto(
+        "Nuevo nombre del estudiante: "
+    );
+
+    estudiante->nombre = nuevoNombre;
+
+    cout << "Estudiante modificado correctamente.\n";
+}
+
+void liberarInscripciones(
+    Estudiante *estudiante
+) {
+    Inscripcion *actual =
+            estudiante->inscripciones;
+
+    while (actual != nullptr) {
+        Inscripcion *siguiente =
+                actual->siguiente;
+
+        delete actual;
+
+        actual = siguiente;
+    }
+
+    estudiante->inscripciones = nullptr;
+}
+
+void eliminarEstudiante(
+    ListaEstudiantes &lista
+) {
+    string codigo = leerTexto(
+        "Codigo del estudiante que deseas eliminar: "
+    );
+
+    Estudiante *actual = lista.inicio;
+    Estudiante *anterior = nullptr;
+
+    while (
+        actual != nullptr &&
+        actual->codigo != codigo
+    ) {
+        anterior = actual;
+        actual = actual->siguiente;
+    }
+
+    if (actual == nullptr) {
+        cout << "Estudiante no encontrado.\n";
+        return;
+    }
+
+    liberarInscripciones(actual);
+
+    if (anterior == nullptr) {
+        lista.inicio = actual->siguiente;
+    } else {
+        anterior->siguiente = actual->siguiente;
+    }
+
+    if (lista.fin == actual) {
+        lista.fin = anterior;
+    }
+
+    delete actual;
+
+    cout << "Estudiante eliminado correctamente.\n";
+}
+
+bool yaEstaInscrito(
+    const Estudiante *estudiante,
+    const Asignatura *asignatura
+) {
+    Inscripcion *actual =
+            estudiante->inscripciones;
 
     while (actual != nullptr) {
         if (actual->asignatura == asignatura) {
@@ -242,16 +567,25 @@ bool yaEstaInscrito(
 }
 
 void inscribirAsignatura(
-    ListaEstudiantes& estudiantes,
-    const ListaAsignaturas& asignaturas
+    ListaEstudiantes &estudiantes,
+    const ListaAsignaturas &asignaturas
 ) {
     if (estudiantes.inicio == nullptr) {
         cout << "Primero debes registrar un estudiante.\n";
         return;
     }
 
-    string codigo = leerTexto("Codigo del estudiante: ");
-    Estudiante* estudiante = buscarEstudiante(estudiantes, codigo);
+    if (asignaturas.inicio == nullptr) {
+        cout << "Primero debes registrar una asignatura.\n";
+        return;
+    }
+
+    string codigo = leerTexto(
+        "Codigo del estudiante: "
+    );
+
+    Estudiante *estudiante =
+            buscarEstudiante(estudiantes, codigo);
 
     if (estudiante == nullptr) {
         cout << "No se encontro un estudiante con ese codigo.\n";
@@ -260,9 +594,15 @@ void inscribirAsignatura(
 
     mostrarAsignaturas(asignaturas);
 
-    int numero = leerEntero("Numero de la asignatura que desea inscribir: ");
-    Asignatura* asignatura =
-        obtenerAsignaturaPorNumero(asignaturas, numero);
+    int numero = leerEntero(
+        "Numero de la asignatura que desea inscribir: "
+    );
+
+    Asignatura *asignatura =
+            obtenerAsignaturaPorNumero(
+                asignaturas,
+                numero
+            );
 
     if (asignatura == nullptr) {
         cout << "El numero de asignatura no es valido.\n";
@@ -274,9 +614,12 @@ void inscribirAsignatura(
         return;
     }
 
-    float nota = leerNota("Nota del estudiante en la asignatura: ");
+    float nota = leerNota(
+        "Nota del estudiante en la asignatura: "
+    );
 
-    Inscripcion* nueva = new Inscripcion;
+    Inscripcion *nueva = new Inscripcion;
+
     nueva->asignatura = asignatura;
     nueva->nota = nota;
     nueva->siguiente = nullptr;
@@ -284,7 +627,8 @@ void inscribirAsignatura(
     if (estudiante->inscripciones == nullptr) {
         estudiante->inscripciones = nueva;
     } else {
-        Inscripcion* ultima = estudiante->inscripciones;
+        Inscripcion *ultima =
+                estudiante->inscripciones;
 
         while (ultima->siguiente != nullptr) {
             ultima = ultima->siguiente;
@@ -293,201 +637,327 @@ void inscribirAsignatura(
         ultima->siguiente = nueva;
     }
 
-    cout << estudiante->nombre << " quedo inscrito en "
-         << asignatura->nombre << ".\n";
+    cout << estudiante->nombre
+            << " quedo inscrito en "
+            << asignatura->nombre
+            << ".\n";
 }
 
-void mostrarInscripciones(const Estudiante* estudiante) {
-    Inscripcion* actual = estudiante->inscripciones;
-
-    if (actual == nullptr) {
-        cout << "  No tiene asignaturas inscritas.\n";
-        return;
-    }
-
-    cout << "  Asignaturas y notas:\n";
+Inscripcion *buscarInscripcion(
+    Estudiante *estudiante,
+    const string &nombreAsignatura
+) {
+    Inscripcion *actual =
+            estudiante->inscripciones;
 
     while (actual != nullptr) {
-        cout << "  - " << actual->asignatura->nombre
-             << ": " << actual->nota << '\n';
+        if (
+            actual->asignatura->nombre
+            == nombreAsignatura
+        ) {
+            return actual;
+        }
 
         actual = actual->siguiente;
     }
+
+    return nullptr;
 }
 
-void mostrarUnEstudiante(const Estudiante* estudiante) {
-    cout << "\nNombre: " << estudiante->nombre << '\n';
-    cout << "Codigo: " << estudiante->codigo << '\n';
-    mostrarInscripciones(estudiante);
-}
+void consultarNota(
+    ListaEstudiantes &estudiantes
+) {
+    string codigo = leerTexto(
+        "Codigo del estudiante: "
+    );
 
-void mostrarTodosLosEstudiantes(const ListaEstudiantes& lista) {
-    if (lista.inicio == nullptr) {
-        cout << "No hay estudiantes registrados.\n";
-        return;
-    }
-
-    cout << "\n=== ESTUDIANTES E INSCRIPCIONES ===\n";
-
-    Estudiante* actual = lista.inicio;
-
-    while (actual != nullptr) {
-        mostrarUnEstudiante(actual);
-        actual = actual->siguiente;
-    }
-}
-
-void consultarEstudiante(const ListaEstudiantes& lista) {
-    string codigo = leerTexto("Codigo del estudiante que deseas consultar: ");
-    Estudiante* estudiante = buscarEstudiante(lista, codigo);
+    Estudiante *estudiante =
+            buscarEstudiante(
+                estudiantes,
+                codigo
+            );
 
     if (estudiante == nullptr) {
-        cout << "No se encontro un estudiante con ese codigo.\n";
+        cout << "Estudiante no encontrado.\n";
         return;
     }
 
-    cout << "\n=== ESTUDIANTE ENCONTRADO ===\n";
-    mostrarUnEstudiante(estudiante);
+    string asignatura = leerTexto(
+        "Nombre de la asignatura: "
+    );
+
+    Inscripcion *inscripcion =
+            buscarInscripcion(
+                estudiante,
+                asignatura
+            );
+
+    if (inscripcion == nullptr) {
+        cout << "Nota no encontrada.\n";
+        return;
+    }
+
+    cout << "Estudiante: "
+            << estudiante->nombre
+            << '\n';
+
+    cout << "Asignatura: "
+            << inscripcion->asignatura->nombre
+            << '\n';
+
+    cout << "Nota: "
+            << inscripcion->nota
+            << '\n';
 }
 
-bool calcularPromedio(
-    const Estudiante* estudiante,
-    float& promedio
+void modificarNota(
+    ListaEstudiantes &estudiantes
 ) {
-    Inscripcion* actual = estudiante->inscripciones;
-    float suma = 0;
-    int cantidad = 0;
+    string codigo = leerTexto(
+        "Codigo del estudiante: "
+    );
 
-    while (actual != nullptr) {
-        suma += actual->nota;
-        cantidad++;
-        actual = actual->siguiente;
-    }
+    Estudiante *estudiante =
+            buscarEstudiante(
+                estudiantes,
+                codigo
+            );
 
-    if (cantidad == 0) {
-        return false;
-    }
-
-    promedio = suma / cantidad;
-    return true;
-}
-
-void mostrarPromedios(const ListaEstudiantes& lista) {
-    if (lista.inicio == nullptr) {
-        cout << "No hay estudiantes registrados.\n";
+    if (estudiante == nullptr) {
+        cout << "Estudiante no encontrado.\n";
         return;
     }
 
-    cout << "\n=== PROMEDIOS POR ESTUDIANTE ===\n";
+    string asignatura = leerTexto(
+        "Nombre de la asignatura: "
+    );
 
-    Estudiante* actual = lista.inicio;
-    bool hayPromedios = false;
+    Inscripcion *inscripcion =
+            buscarInscripcion(
+                estudiante,
+                asignatura
+            );
 
-    while (actual != nullptr) {
-        float promedio;
-
-        cout << actual->nombre << " (" << actual->codigo << "): ";
-
-        if (calcularPromedio(actual, promedio)) {
-            cout << promedio << '\n';
-            hayPromedios = true;
-        } else {
-            cout << "sin notas registradas\n";
-        }
-
-        actual = actual->siguiente;
-    }
-
-    if (!hayPromedios) {
-        cout << "Todavia no hay notas para calcular promedios.\n";
-    }
-}
-
-void mostrarMayorPromedio(const ListaEstudiantes& lista) {
-    Estudiante* actual = lista.inicio;
-    Estudiante* mejorEstudiante = nullptr;
-    float mayorPromedio = 0;
-
-    while (actual != nullptr) {
-        float promedio;
-
-        if (calcularPromedio(actual, promedio)) {
-            if (mejorEstudiante == nullptr || promedio > mayorPromedio) {
-                mejorEstudiante = actual;
-                mayorPromedio = promedio;
-            }
-        }
-
-        actual = actual->siguiente;
-    }
-
-    if (mejorEstudiante == nullptr) {
-        cout << "No hay notas registradas para comparar.\n";
+    if (inscripcion == nullptr) {
+        cout << "Nota no encontrada.\n";
         return;
     }
 
-    cout << "Estudiante con mayor promedio: "
-         << mejorEstudiante->nombre << '\n';
-    cout << "Promedio: " << mayorPromedio << '\n';
+    float nuevaNota =
+            leerNota("Nueva nota: ");
+
+    inscripcion->nota = nuevaNota;
+
+    cout << "Nota modificada correctamente.\n";
 }
 
-void mostrarMenorPromedio(const ListaEstudiantes& lista) {
-    Estudiante* actual = lista.inicio;
-    Estudiante* menorEstudiante = nullptr;
-    float menorPromedio = 0;
+void eliminarNota(
+    ListaEstudiantes &estudiantes
+) {
+    string codigo = leerTexto(
+        "Codigo del estudiante: "
+    );
 
-    while (actual != nullptr) {
-        float promedio;
+    Estudiante *estudiante =
+            buscarEstudiante(
+                estudiantes,
+                codigo
+            );
 
-        if (calcularPromedio(actual, promedio)) {
-            if (menorEstudiante == nullptr || promedio < menorPromedio) {
-                menorEstudiante = actual;
-                menorPromedio = promedio;
-            }
-        }
-
-        actual = actual->siguiente;
-    }
-
-    if (menorEstudiante == nullptr) {
-        cout << "No hay notas registradas para comparar.\n";
+    if (estudiante == nullptr) {
+        cout << "Estudiante no encontrado.\n";
         return;
     }
 
-    cout << "Estudiante con menor promedio: "
-         << menorEstudiante->nombre << '\n';
-    cout << "Promedio: " << menorPromedio << '\n';
+    string asignatura = leerTexto(
+        "Nombre de la asignatura: "
+    );
+
+    Inscripcion *actual =
+            estudiante->inscripciones;
+
+    Inscripcion *anterior = nullptr;
+
+    while (
+        actual != nullptr &&
+        actual->asignatura->nombre != asignatura
+    ) {
+        anterior = actual;
+        actual = actual->siguiente;
+    }
+
+    if (actual == nullptr) {
+        cout << "Nota no encontrada.\n";
+        return;
+    }
+
+    if (anterior == nullptr) {
+        estudiante->inscripciones =
+                actual->siguiente;
+    } else {
+        anterior->siguiente =
+                actual->siguiente;
+    }
+
+    delete actual;
+
+    cout << "Nota eliminada correctamente.\n";
 }
 
-void liberarEstudiantes(ListaEstudiantes& lista) {
-    Estudiante* estudianteActual = lista.inicio;
+void mostrarAprobados(
+    const ListaEstudiantes &estudiantes,
+    const ListaAsignaturas &asignaturas
+) {
+    string nombreAsignatura = leerTexto(
+        "Nombre de la asignatura: "
+    );
+
+    Asignatura *asignatura =
+            buscarAsignatura(
+                asignaturas,
+                nombreAsignatura
+            );
+
+    if (asignatura == nullptr) {
+        cout << "Asignatura no encontrada.\n";
+        return;
+    }
+
+    cout << "\n=== APROBADOS EN "
+            << asignatura->nombre
+            << " ===\n";
+
+    Estudiante *estudianteActual =
+            estudiantes.inicio;
+
+    bool encontrado = false;
 
     while (estudianteActual != nullptr) {
-        Inscripcion* inscripcionActual = estudianteActual->inscripciones;
+        Inscripcion *inscripcionActual =
+                estudianteActual->inscripciones;
 
         while (inscripcionActual != nullptr) {
-            Inscripcion* siguienteInscripcion =
-                inscripcionActual->siguiente;
+            if (
+                inscripcionActual->asignatura
+                == asignatura &&
+                inscripcionActual->nota
+                >= NOTA_APROBACION
+            ) {
+                cout << estudianteActual->nombre
+                        << " - "
+                        << inscripcionActual->nota
+                        << '\n';
 
-            delete inscripcionActual;
-            inscripcionActual = siguienteInscripcion;
+                encontrado = true;
+            }
+
+            inscripcionActual =
+                    inscripcionActual->siguiente;
         }
 
-        Estudiante* siguienteEstudiante = estudianteActual->siguiente;
+        estudianteActual =
+                estudianteActual->siguiente;
+    }
+
+    if (!encontrado) {
+        cout << "No hay estudiantes aprobados.\n";
+    }
+}
+
+void mostrarReprobados(
+    const ListaEstudiantes &estudiantes,
+    const ListaAsignaturas &asignaturas
+) {
+    string nombreAsignatura = leerTexto(
+        "Nombre de la asignatura: "
+    );
+
+    Asignatura *asignatura =
+            buscarAsignatura(
+                asignaturas,
+                nombreAsignatura
+            );
+
+    if (asignatura == nullptr) {
+        cout << "Asignatura no encontrada.\n";
+        return;
+    }
+
+    cout << "\n=== REPROBADOS EN "
+            << asignatura->nombre
+            << " ===\n";
+
+    Estudiante *estudianteActual =
+            estudiantes.inicio;
+
+    bool encontrado = false;
+
+    while (estudianteActual != nullptr) {
+        Inscripcion *inscripcionActual =
+                estudianteActual->inscripciones;
+
+        while (inscripcionActual != nullptr) {
+            if (
+                inscripcionActual->asignatura
+                == asignatura &&
+                inscripcionActual->nota
+                < NOTA_APROBACION
+            ) {
+                cout << estudianteActual->nombre
+                        << " - "
+                        << inscripcionActual->nota
+                        << '\n';
+
+                encontrado = true;
+            }
+
+            inscripcionActual =
+                    inscripcionActual->siguiente;
+        }
+
+        estudianteActual =
+                estudianteActual->siguiente;
+    }
+
+    if (!encontrado) {
+        cout << "No hay estudiantes reprobados.\n";
+    }
+}
+
+void liberarEstudiantes(
+    ListaEstudiantes &lista
+) {
+    Estudiante *estudianteActual =
+            lista.inicio;
+
+    while (estudianteActual != nullptr) {
+        liberarInscripciones(
+            estudianteActual
+        );
+
+        Estudiante *siguiente =
+                estudianteActual->siguiente;
+
         delete estudianteActual;
-        estudianteActual = siguienteEstudiante;
+
+        estudianteActual = siguiente;
     }
 
     lista.inicio = nullptr;
     lista.fin = nullptr;
 }
 
-void liberarAsignaturas(ListaAsignaturas& lista) {
-    Asignatura* actual = lista.inicio;
+void liberarAsignaturas(
+    ListaAsignaturas &lista
+) {
+    Asignatura *actual = lista.inicio;
 
     while (actual != nullptr) {
-        Asignatura* siguiente = actual->siguiente;
+        Asignatura *siguiente =
+                actual->siguiente;
+
         delete actual;
+
         actual = siguiente;
     }
 
@@ -499,22 +969,38 @@ int main() {
     ListaAsignaturas asignaturas;
     ListaEstudiantes estudiantes;
 
-    registrarAsignaturasIniciales(asignaturas);
-
     int opcion;
 
     do {
-        cout << "\n===== SISTEMA DE INSCRIPCIONES ACADEMICAS =====\n";
-        cout << "1. Registrar estudiante\n";
-        cout << "2. Inscribir estudiante en una asignatura\n";
-        cout << "3. Mostrar estudiantes e inscripciones\n";
-        cout << "4. Buscar estudiante por codigo\n";
-        cout << "5. Mostrar promedios\n";
-        cout << "6. Mostrar estudiante con mayor promedio\n";
-        cout << "7. Mostrar estudiante con menor promedio\n";
-        cout << "8. Salir\n";
+        cout << "\n====================================\n";
+        cout << "   SISTEMA DE GESTION ACADEMICA\n";
+        cout << "====================================\n";
 
-        opcion = leerEntero("Selecciona una opcion: ");
+        cout << "1. Registrar estudiante\n";
+        cout << "2. Mostrar estudiantes\n";
+        cout << "3. Buscar estudiante\n";
+        cout << "4. Modificar estudiante\n";
+        cout << "5. Eliminar estudiante\n";
+
+        cout << "\n6. Agregar asignatura\n";
+        cout << "7. Mostrar asignaturas\n";
+        cout << "8. Buscar asignatura\n";
+        cout << "9. Modificar asignatura\n";
+        cout << "10. Eliminar asignatura\n";
+
+        cout << "\n11. Inscribir estudiante y agregar nota\n";
+        cout << "12. Buscar nota\n";
+        cout << "13. Modificar nota\n";
+        cout << "14. Eliminar nota\n";
+
+        cout << "\n15. Mostrar aprobados por asignatura\n";
+        cout << "16. Mostrar reprobados por asignatura\n";
+
+        cout << "\n17. Salir\n";
+
+        opcion = leerEntero(
+            "Selecciona una opcion: "
+        );
 
         switch (opcion) {
             case 1:
@@ -522,37 +1008,87 @@ int main() {
                 break;
 
             case 2:
-                inscribirAsignatura(estudiantes, asignaturas);
+                mostrarTodosLosEstudiantes(
+                    estudiantes
+                );
                 break;
 
             case 3:
-                mostrarTodosLosEstudiantes(estudiantes);
-                break;
-
-            case 4:
                 consultarEstudiante(estudiantes);
                 break;
 
+            case 4:
+                modificarEstudiante(estudiantes);
+                break;
+
             case 5:
-                mostrarPromedios(estudiantes);
+                eliminarEstudiante(estudiantes);
                 break;
 
             case 6:
-                mostrarMayorPromedio(estudiantes);
+                registrarAsignatura(asignaturas);
                 break;
 
             case 7:
-                mostrarMenorPromedio(estudiantes);
+                mostrarAsignaturas(asignaturas);
                 break;
 
             case 8:
+                consultarAsignatura(asignaturas);
+                break;
+
+            case 9:
+                modificarAsignatura(asignaturas);
+                break;
+
+            case 10:
+                eliminarAsignatura(
+                    asignaturas,
+                    estudiantes
+                );
+                break;
+
+            case 11:
+                inscribirAsignatura(
+                    estudiantes,
+                    asignaturas
+                );
+                break;
+
+            case 12:
+                consultarNota(estudiantes);
+                break;
+
+            case 13:
+                modificarNota(estudiantes);
+                break;
+
+            case 14:
+                eliminarNota(estudiantes);
+                break;
+
+            case 15:
+                mostrarAprobados(
+                    estudiantes,
+                    asignaturas
+                );
+                break;
+
+            case 16:
+                mostrarReprobados(
+                    estudiantes,
+                    asignaturas
+                );
+                break;
+
+            case 17:
                 cout << "Programa finalizado.\n";
                 break;
 
             default:
                 cout << "Opcion no valida.\n";
         }
-    } while (opcion != 8);
+    } while (opcion != 17);
 
     liberarEstudiantes(estudiantes);
     liberarAsignaturas(asignaturas);
